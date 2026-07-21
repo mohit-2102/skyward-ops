@@ -1,8 +1,6 @@
 
 ```
 Drone Next
-├─ .gemini
-│  └─ settings.json
 ├─ backend
 │  ├─ .env.example
 │  ├─ package-lock.json
@@ -30,9 +28,18 @@ Drone Next
 │  │  ├─ app.ts
 │  │  ├─ config
 │  │  ├─ features
+│  │  │  └─ drone
+│  │  │     ├─ drone.controller.ts
+│  │  │     ├─ drone.mapper.ts
+│  │  │     ├─ drone.routes.ts
+│  │  │     ├─ drone.service.ts
+│  │  │     ├─ drone.types.ts
+│  │  │     ├─ drone.validation.ts
+│  │  │     └─ index.ts
 │  │  ├─ lib
 │  │  │  └─ prisma.ts
 │  │  ├─ middleware
+│  │  │  └─ errorHandler.ts
 │  │  ├─ server.ts
 │  │  ├─ simulator
 │  │  ├─ test-db.ts
