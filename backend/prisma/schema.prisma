@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum DroneStatus {
+  ONLINE
+  OFFLINE
+  IN_FLIGHT
+  CHARGING
+  MAINTENANCE
+}
+
+enum MissionStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  FAILED
+  ABORTED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertType {
+  LOW_BATTERY
+  GPS_SIGNAL
+  COMMUNICATION
+  SYSTEM
+  OBSTACLE
+}
+
+enum MaintenanceType {
+  ROUTINE
+  REPAIR
+  INSPECTION
+  FIRMWARE_UPDATE
+  BATTERY_REPLACEMENT
+  PROPELLER_REPLACEMENT
+  MOTOR_SERVICE
+  CALIBRATION
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model Manufacturer {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  country   String?
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  drones Drone[]
+
+  @@index([name])
+  @@map("manufacturers")
+}
+
+model Drone {
+  id              String       @id @default(cuid())
+  serialNumber    String       @unique
+  name            String // Human-readable display name (e.g., "Inspection Drone 01", "Warehouse Scout A")
+  model           String
+  manufacturerId  String
+  manufacturer    Manufacturer @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
+  status          DroneStatus  @default(OFFLINE)
+  firmwareVersion String?
+  batteryLevel    Int          @default(100) @db.SmallInt // Current battery charge (0-100)
+  batteryHealth   Int?         @db.SmallInt // Long-term battery health (0-100), separate from charge level
+  latitude        Float        @default(0) @db.DoublePrecision
+  longitude       Float        @default(0) @db.DoublePrecision
+  altitude        Float        @default(0) @db.DoublePrecision
+  speed           Float        @default(0) @db.DoublePrecision
+  heading         Float        @default(0) @db.DoublePrecision
+  payloadCapacity Float?       @db.DoublePrecision // Payload capacity in kilograms
+  camera          String? // Camera model/type (e.g., "4K RGB Camera", "Thermal Camera")
+  weight          Float?       @db.DoublePrecision // Drone weight in kilograms
+  maxFlightTime   Int? // Maximum flight time in minutes
+  maxSpeed        Float?       @db.DoublePrecision // Maximum speed in km/h
+  lastSeenAt      DateTime?    @db.Timestamptz
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  telemetry   Telemetry[]
+  missions    Mission[]
+  maintenance MaintenanceRecord[]
+  alerts      Alert[]
+
+  @@index([manufacturerId])
+  @@index([status])
+  @@index([lastSeenAt])
+  @@index([serialNumber])
+  @@map("drones")
+}
+
+model Telemetry {
+  id             String   @id @default(cuid())
+  droneId        String
+  drone          Drone    @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  batteryLevel   Int      @db.SmallInt
+  latitude       Float    @db.DoublePrecision
+  longitude      Float    @db.DoublePrecision
+  altitude       Float    @db.DoublePrecision
+  speed          Float    @db.DoublePrecision
+  heading        Float    @db.DoublePrecision
+  temperature    Float?   @db.DoublePrecision
+  humidity       Float?   @db.DoublePrecision
+  windSpeed      Float?   @db.DoublePrecision
+  signalStrength Int?     @db.SmallInt
+  gpsAccuracy    Float?   @db.DoublePrecision // GPS accuracy in meters
+  recordedAt     DateTime @default(now()) @db.Timestamptz
+
+  @@index([droneId, recordedAt(sort: Desc)])
+  @@index([recordedAt(sort: Desc)])
+  @@map("telemetry")
+}
+
+model Mission {
+  id             String        @id @default(cuid())
+  name           String
+  description    String?
+  droneId        String
+  drone          Drone         @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  status         MissionStatus @default(PLANNED)
+  plannedStartAt DateTime?     @db.Timestamptz
+  actualStartAt  DateTime?     @db.Timestamptz
+  completedAt    DateTime?     @db.Timestamptz
+  plannedRoute   Json? // GeoJSON LineString or Polygon
+  actualRoute    Json? // GeoJSON LineString
+  waypoints      Json? // Array of waypoints
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([droneId])
+  @@index([status])
+  @@index([plannedStartAt(sort: Desc)])
+  @@map("missions")
+}
+
+model MaintenanceRecord {
+  id          String            @id @default(cuid())
+  droneId     String
+  drone       Drone             @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  type        MaintenanceType
+  status      MaintenanceStatus @default(SCHEDULED)
+  description String?
+  performedBy String?
+  cost        Decimal?          @db.Decimal(10, 2)
+  scheduledAt DateTime          @db.Timestamptz
+  startedAt   DateTime?         @db.Timestamptz
+  completedAt DateTime?         @db.Timestamptz
+  nextDueAt   DateTime?         @db.Timestamptz
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([droneId])
+  @@index([status])
+  @@index([scheduledAt(sort: Desc)])
+  @@index([nextDueAt(sort: Asc)])
+  @@map("maintenance_records")
+}
+
+model Alert {
+  id             String        @id @default(cuid())
+  droneId        String
+  drone          Drone         @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  type           AlertType
+  severity       AlertSeverity @default(MEDIUM)
+  message        String
+  metadata       Json? // Additional context: battery level, coordinates, etc.
+  acknowledgedAt DateTime?     @db.Timestamptz
+  acknowledgedBy String?
+  resolvedAt     DateTime?     @db.Timestamptz
+  resolvedBy     String?
+  createdAt      DateTime      @default(now()) @db.Timestamptz
+
+  @@index([droneId])
+  @@index([severity])
+  @@index([type])
+  @@index([createdAt(sort: Desc)])
+  @@index([acknowledgedAt(sort: Desc)])
+  @@map("alerts")
+}
