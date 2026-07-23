@@ -1,6 +1,8 @@
 import express from "express"
 import cors from "cors"
 import { droneRoutes } from "./features/drone"
+import { telemetryRoutes } from "./features/telemetry"
+import { missionRoutes } from "./features/mission"
 
 const app = express()
 
@@ -15,5 +17,7 @@ app.get("/", (_req, res)=>{
 })
 
 app.use("/api/v1/drones", droneRoutes)
+app.use("/api/v1/telemetry", telemetryRoutes)
+app.use("/api/v1/missions", missionRoutes)
 
 export default app

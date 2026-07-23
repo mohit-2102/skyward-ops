@@ -28,18 +28,27 @@ Drone Next
 │  │  ├─ app.ts
 │  │  ├─ config
 │  │  ├─ features
-│  │  │  └─ drone
-│  │  │     ├─ drone.controller.ts
-│  │  │     ├─ drone.mapper.ts
-│  │  │     ├─ drone.routes.ts
-│  │  │     ├─ drone.service.ts
-│  │  │     ├─ drone.types.ts
-│  │  │     ├─ drone.validation.ts
-│  │  │     └─ index.ts
+│  │  │  ├─ drone
+│  │  │  │  ├─ drone.controller.ts
+│  │  │  │  ├─ drone.mapper.ts
+│  │  │  │  ├─ drone.routes.ts
+│  │  │  │  ├─ drone.service.ts
+│  │  │  │  ├─ drone.types.ts
+│  │  │  │  ├─ drone.validation.ts
+│  │  │  │  └─ index.ts
+│  │  │  └─ telemetry
+│  │  │     ├─ index.ts
+│  │  │     ├─ telemetry.controller.ts
+│  │  │     ├─ telemetry.mapper.ts
+│  │  │     ├─ telemetry.routes.ts
+│  │  │     ├─ telemetry.service.ts
+│  │  │     ├─ telemetry.types.ts
+│  │  │     └─ telemetry.validation.ts
 │  │  ├─ lib
 │  │  │  └─ prisma.ts
 │  │  ├─ middleware
-│  │  │  └─ errorHandler.ts
+│  │  │  ├─ errorHandler.ts
+│  │  │  └─ validation.ts
 │  │  ├─ server.ts
 │  │  ├─ simulator
 │  │  ├─ test-db.ts

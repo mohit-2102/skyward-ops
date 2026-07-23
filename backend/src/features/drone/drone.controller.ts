@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { droneService } from './drone.service';
 import { CreateDroneInput, UpdateDroneInput, QueryDroneInput, DroneIdParam } from './drone.validation';
+import { ValidatedRequest } from '../../middleware/validation';
 
 export const droneController = {
-  async getAll(req: Request, res: Response) {
-    const query = req.query as unknown as QueryDroneInput;
+  async getAll(req: ValidatedRequest, res: Response) {
+    const query = req.validatedQuery as QueryDroneInput;
     const result = await droneService.getAll(query);
     res.status(200).json({
       success: true,
@@ -12,8 +13,8 @@ export const droneController = {
     });
   },
 
-  async getById(req: Request, res: Response) {
-    const { id } = req.params as DroneIdParam;
+  async getById(req: ValidatedRequest, res: Response) {
+    const { id } = req.validatedParams as DroneIdParam;
     const drone = await droneService.getById(id);
     res.status(200).json({
       success: true,
@@ -21,8 +22,8 @@ export const droneController = {
     });
   },
 
-  async create(req: Request, res: Response) {
-    const data = req.body as CreateDroneInput;
+  async create(req: ValidatedRequest, res: Response) {
+    const data = req.validatedBody as CreateDroneInput;
     const drone = await droneService.create(data);
     res.status(201).json({
       success: true,
@@ -30,9 +31,9 @@ export const droneController = {
     });
   },
 
-  async update(req: Request, res: Response) {
-    const { id } = req.params as DroneIdParam;
-    const data = req.body as UpdateDroneInput;
+  async update(req: ValidatedRequest, res: Response) {
+    const { id } = req.validatedParams as DroneIdParam;
+    const data = req.validatedBody as UpdateDroneInput;
     const drone = await droneService.update(id, data);
     res.status(200).json({
       success: true,
@@ -40,8 +41,8 @@ export const droneController = {
     });
   },
 
-  async delete(req: Request, res: Response) {
-    const { id } = req.params as DroneIdParam;
+  async delete(req: ValidatedRequest, res: Response) {
+    const { id } = req.validatedParams as DroneIdParam;
     await droneService.delete(id);
     res.status(204).send();
   },

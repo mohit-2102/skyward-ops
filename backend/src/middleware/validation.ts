@@ -9,7 +9,7 @@ import { ZodObject, ZodRawShape, ZodError } from 'zod';
 /**
  * Type for Express request with validated data
  */
-interface ValidatedRequest extends Request {
+export interface ValidatedRequest extends Request {
   validatedBody?: unknown;
   validatedQuery?: unknown;
   validatedParams?: unknown;
@@ -28,24 +28,22 @@ export function validate(schema: {
     try {
       if (schema.body) {
         req.validatedBody = await schema.body.parseAsync(req.body);
-        req.body = req.validatedBody;
       }
       if (schema.query) {
         req.validatedQuery = await schema.query.parseAsync(req.query);
-        req.query = req.validatedQuery as Record<string, string | string[] | undefined>;
       }
       if (schema.params) {
         req.validatedParams = await schema.params.parseAsync(req.params);
-        req.params = req.validatedParams as Record<string, string>;
       }
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const details = error.errors.map(e => ({
-          field: e.path.join('.'),
-          message: e.message,
+        const details = error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
         }));
-        next(new (await import('./errorHandler')).AppError('Invalid request data', 400, 'VALIDATION_ERROR', details));
+        const { AppError } = await import('./errorHandler.js');
+        next(new AppError('Invalid request data', 400, 'VALIDATION_ERROR', details));
       } else {
         next(error);
       }
