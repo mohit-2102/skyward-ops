@@ -101,9 +101,11 @@ model Drone {
   weight          Float?       @db.DoublePrecision // Drone weight in kilograms
   maxFlightTime   Int? // Maximum flight time in minutes
   maxSpeed        Float?       @db.DoublePrecision // Maximum speed in km/h
-  lastSeenAt      DateTime?    @db.Timestamptz
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  lastSeenAt          DateTime?    @db.Timestamptz
+  lastMaintenanceAt   DateTime?    @db.Timestamptz
+  nextMaintenanceDue  DateTime?    @db.Timestamptz
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
 
   telemetry   Telemetry[]
   missions    Mission[]
