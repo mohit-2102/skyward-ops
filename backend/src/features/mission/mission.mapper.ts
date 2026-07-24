@@ -1,7 +1,17 @@
-import { Mission, Drone, DroneStatus } from '@prisma/client';
+import { Mission, Drone, DroneStatus, MissionStatus } from '@prisma/client';
 import { MissionResponse } from './mission.types';
 
-export function toMissionResponse(mission: Mission & { drone: Drone }): MissionResponse {
+export type MissionWithDrone = Mission & {
+  drone: {
+    id: string;
+    serialNumber: string;
+    name: string;
+    model: string;
+    status: DroneStatus;
+  };
+};
+
+export function toMissionResponse(mission: MissionWithDrone): MissionResponse {
   return {
     id: mission.id,
     name: mission.name,
@@ -26,6 +36,6 @@ export function toMissionResponse(mission: Mission & { drone: Drone }): MissionR
   };
 }
 
-export function toMissionResponses(missions: (Mission & { drone: Drone })[]): MissionResponse[] {
+export function toMissionResponses(missions: MissionWithDrone[]): MissionResponse[] {
   return missions.map(toMissionResponse);
 }
